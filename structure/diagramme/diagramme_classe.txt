@@ -1,0 +1,99 @@
+@startuml
+
+class User <<abstract>> {
+	mail {pk}
+	nom
+	prenom
+	tel
+	mdp
+	date_creation
+	statut:enum<'actif','inactif'>
+	
+	creer_un_compte()
+	se_connecter()
+	modifier_profil()
+}
+
+class Candidat {
+	rechercher_offre()
+	afficher_offre()
+	candidater()
+	voir_candidatures()
+	selectionner_candidature()
+	modifier_candidature()
+	annuler_candidature()
+	demander_ajout_organisation()
+	demander_rejoindre_organisation()
+}
+Candidat--|>User
+Candidat "*" -- "*" Offre:candidate >
+
+class Recruteur {
+	voir_offres()
+	ajouter_offre()
+	editer_offre()
+	supprimer_offre()
+	telecharger_dossiers_candidats()
+	afficher_liste_candidats()
+	valider_demande_rejoindre_organisation()
+}
+Recruteur--|>User
+Recruteur "*" --o "1" Organisation
+
+class Organisation {
+	siren {pk}
+	nom
+	siege_social
+}
+Organisation "*" --> "1" Type
+
+class Type {
+	type
+}
+
+class Administrateur {
+	valider_ajout_organisation()
+	voir_organisations()
+	editer_organisation()
+	supprimer_organisation()
+	visualiser_utilisateurs()
+	gerer_utilisateur()
+	visualier_demandes_ajout_organisation()
+}
+Administrateur--|>User
+
+class Offre {
+	nom {pk}
+	etat
+	date_validite
+	liste_pieces
+}
+Offre "*" *-- "1" Organisation
+
+class FicheDePoste {
+	id {pk}
+	titre
+	statut
+	responsable
+	type
+	lieu
+	rythme
+	salaire
+	description
+}
+FicheDePoste "1" o-- "*" Offre
+
+class Candidature {
+	date
+	mail_candidat {fk}
+	num_offre {fk}
+}
+note right of Candidature : (mail_candidat, num_offre) {pk}
+(Offre,Candidat)..Candidature
+
+class Pieces {
+	lien {pk}
+}
+Pieces "*" --*  "1" Candidature
+
+@enduml
