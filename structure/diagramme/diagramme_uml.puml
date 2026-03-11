@@ -1,0 +1,255 @@
+@startuml SR10_DiagrammeClasses
+' ============================================================
+'  SR10 Diagramme de Classes UML
+'  Application Web de Recrutement
+'  Maxime Boschet GI02, Antonin Filippi GI02
+' ============================================================
+
+skinparam classAttributeIconSize 0
+skinparam classFontName          Arial
+skinparam classFontSize          13
+skinparam classBackgroundColor   #EEF4FF
+skinparam classBorderColor       #1F4E79
+skinparam classBorderThickness   2
+skinparam classHeaderBackgroundColor #1F4E79
+skinparam classHeaderFontColor   white
+skinparam classHeaderFontSize    14
+skinparam classHeaderFontStyle   bold
+skinparam arrowColor             #1F4E79
+skinparam arrowThickness         2
+skinparam noteBackgroundColor    #FFFDE7
+skinparam noteBorderColor        #B8860B
+skinparam noteFontSize           12
+skinparam shadowing              true
+skinparam roundcorner            8
+
+title Diagramme de Classes UML\nApplication de Recrutement — SR10 \n Antonin Filippi Maxime Boschet
+
+
+' ============================================================
+'  ENUMERATIONS des différents choix d'attributs de type enum
+' ============================================================
+
+enum RoleUtilisateur << (E,#B8860B) >> {
+  candidat
+  recruteur
+  administrateur
+}
+
+enum StatutCompte << (E,#B8860B) >> {
+  actif
+  inactif
+}
+
+enum TypeOrganisation << (E,#B8860B) >> {
+  association
+  EURL
+  SARL
+  SASU
+  SA
+  SAS
+  autre
+}
+
+enum StatutValidation << (E,#B8860B) >> {
+  en_attente
+  validee
+  refuse
+}
+
+enum EtatOffre << (E,#B8860B) >> {
+  non_publiee
+  publiee
+  expiree
+}
+
+enum StatutPoste << (E,#B8860B) >> {
+  cadre
+  ETAM
+  ouvrier
+  employe
+  autre
+}
+
+enum StatutCandidature << (E,#B8860B) >> {
+  en_cours
+  complete
+  annulee
+}
+
+enum TypePiece << (E,#B8860B) >> {
+  CV
+  lettre_motivation
+  piece_identite
+  photo
+  diplome
+  autre
+}
+
+enum StatutNotification << (E,#B8860B) >> {
+  envoye
+  echec
+}
+
+' ============================================================
+'  CLASSES
+' ============================================================
+
+class Utilisateur {
+  # id_utilisateur      : INT           {PK, AUTO_INCREMENT}
+  - nom                 : VARCHAR(100)  {NOT NULL}
+  - prenom              : VARCHAR(100)  {NOT NULL}
+  - email               : VARCHAR(255)  {UNIQUE}
+  - mot_de_passe        : VARCHAR(255)
+  - telephone           : VARCHAR(20)
+  - date_creation       : DATETIME
+  - statut              : StatutCompte  {DEFAULT actif}
+  - role                : RoleUtilisateur {DEFAULT candidat}
+}
+
+note top of Utilisateur
+  CHECK mot_de_passe :
+  minimum 12 caracteres, comprenant
+  majuscules, minuscules, chiffres et
+  caracteres speciaux (liste >= 37)
+end note
+
+class Organisation {
+  # id_organisation     : INT           {PK, AUTO_INCREMENT}
+  - siren               : VARCHAR(9)    {NOT NULL, UNIQUE}
+  - nom                 : VARCHAR(255)
+  - type                : TypeOrganisation
+  - adresse_siege       : TEXT
+  - statut_validation   : StatutValidation {DEFAULT en_attente}
+  --
+  # id_createur         : INT           {FK -> Utilisateur}
+}
+
+class Recruteur_Organisation << (A,#7B0FA2) >> {
+  # id_recruteur_org    : INT           {PK, AUTO_INCREMENT}
+  - statut              : StatutValidation {DEFAULT en_attente}
+  - date_demande        : DATETIME      {NOT NULL}
+  --
+  # id_utilisateur      : INT           {FK -> Utilisateur}
+  # id_organisation     : INT           {FK -> Organisation}
+}
+
+class Fiche_Poste {
+  # id_fiche_poste      : INT           {PK, AUTO_INCREMENT}
+  - intitule            : VARCHAR(255)  {NOT NULL}
+  - statut_poste        : StatutPoste
+  - type_metier         : VARCHAR(100)
+  - lieu_mission        : VARCHAR(255)
+  - rythme              : VARCHAR(100)
+  - salaire_min         : DECIMAL(10,2)
+  - salaire_max         : DECIMAL(10,2)
+  - description         : TEXT
+  - responsable_hierarchique : VARCHAR(255)
+  --
+  # id_organisation     : INT           {FK -> Organisation}
+}
+
+class Offre_Emploi {
+  # id_offre            : INT           {PK, AUTO_INCREMENT}
+  - numero_unique       : VARCHAR(50)   {NOT NULL, UNIQUE}
+  - etat                : EtatOffre     {DEFAULT non_publiee}
+  - date_validite       : DATE
+  - pieces_description  : TEXT
+  - nombre_pieces       : INT
+  - date_creation       : DATETIME
+  --
+  # id_fiche_poste      : INT           {FK -> Fiche_Poste}
+  # id_recruteur        : INT           {FK -> Utilisateur}
+}
+
+class Candidature {
+  # id_candidature      : INT           {PK, AUTO_INCREMENT}
+  - date_candidature    : DATETIME      {NOT NULL}
+  - statut              : StatutCandidature {DEFAULT en_cours}
+  --
+  # id_offre            : INT           {FK -> Offre_Emploi}
+  # id_candidat         : INT           {FK -> Utilisateur}
+}
+
+note right of Candidature
+  UNIQUE(id_offre, id_candidat)
+  Un candidat ne peut postuler
+  qu'une seule fois par offre.
+end note
+
+class Piece_Candidature {
+  # id_piece            : INT           {PK, AUTO_INCREMENT}
+  - type_piece          : TypePiece     {NOT NULL}
+  - nom_fichier         : VARCHAR(255)
+  - chemin_fichier      : VARCHAR(500)
+  - date_depot          : DATETIME
+  --
+  # id_candidature      : INT           {FK -> Candidature}
+}
+
+class Notification {
+  # id_notification     : INT           {PK, AUTO_INCREMENT}
+  - type_notification   : VARCHAR(100)  {NOT NULL}
+  - message             : TEXT
+  - date_envoi          : DATETIME
+  - statut_envoi        : StatutNotification {DEFAULT envoye}
+  --
+  # id_utilisateur      : INT           {FK -> Utilisateur}
+}
+
+' ============================================================
+'  RELATIONS
+' ============================================================
+
+' Utilisateur cree une Organisation
+Utilisateur      "1"   -->   "0..*"  Organisation          : cree >
+
+' Relation N-N : Utilisateur <-> Organisation via table asso.
+Utilisateur      "1"   *--   "0..*"  Recruteur_Organisation : soumet >
+Organisation     "1"   *--   "0..*"  Recruteur_Organisation : recoit >
+
+' Organisation possede des fiches de poste
+Organisation     "1"   *--   "1..*"  Fiche_Poste            : possede >
+
+' Fiche de poste rattachee a des offres
+Fiche_Poste      "1"   *--   "0..*"  Offre_Emploi           : rattachee a >
+
+' Recruteur gere des offres
+Utilisateur      "1"   -->   "0..*"  Offre_Emploi           : gere (recruteur) >
+
+' Candidat depose des candidatures
+Utilisateur      "1"   *--   "0..*"  Candidature            : depose (candidat) >
+
+' Offre recoit des candidatures
+Offre_Emploi     "1"   *--   "0..*"  Candidature            : recoit >
+
+' Candidature contient des pieces
+Candidature      "1"   *--   "1..*"  Piece_Candidature      : contient >
+
+' Notifications envoyees a un utilisateur
+Utilisateur      "1"   *--   "0..*"  Notification           : recoit >
+
+' Enumerations
+Utilisateur      ..>   RoleUtilisateur
+Utilisateur      ..>   StatutCompte
+Organisation     ..>   TypeOrganisation
+Organisation     ..>   StatutValidation
+Recruteur_Organisation ..> StatutValidation
+Fiche_Poste      ..>   StatutPoste
+Offre_Emploi     ..>   EtatOffre
+Candidature      ..>   StatutCandidature
+Piece_Candidature ..>  TypePiece
+Notification     ..>   StatutNotification
+
+' ============================================================
+'  LAYOUT HINTS
+' ============================================================
+Utilisateur           -[hidden]right-  Organisation
+Organisation          -[hidden]right-  Offre_Emploi
+Offre_Emploi          -[hidden]right-  Candidature
+Candidature           -[hidden]right-  Piece_Candidature
+Organisation          -[hidden]down-   Fiche_Poste
+Utilisateur           -[hidden]down-   Recruteur_Organisation
+Utilisateur           -[hidden]down-   Notification
+
+@enduml
