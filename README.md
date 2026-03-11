@@ -1,6 +1,6 @@
 # SR10-Projet
 Projet SR10 Plateforme de recrutement
-<<<<<<< HEAD
+
 Antonin Fillipi / Maxime Boschet
 
 
@@ -12,4 +12,4 @@ Déroulé du projet:
 
 
 Cycle d'une requête: Navigateur → Express → Middleware (session, cookies…) → Route → Modèle (MySQL) → Vue (EJS) → Réponse
-=======
+
