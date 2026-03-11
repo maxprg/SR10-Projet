@@ -1,8 +1,8 @@
 @startuml SR10_DiagrammeClasses
 ' ============================================================
-'  SR10 / AI16 — Diagramme de Classes UML
+'  SR10 Diagramme de Classes UML
 '  Application Web de Recrutement
-'  Maxime Boschet, Antonin Filippi
+'  Maxime Boschet GI02, Antonin Filippi GI02
 ' ============================================================
 
 skinparam classAttributeIconSize 0
@@ -27,7 +27,7 @@ title Diagramme de Classes UML\nApplication de Recrutement — SR10 \n Antonin F
 
 
 ' ============================================================
-'  ENUMERATIONS
+'  ENUMERATIONS des différents choix d'attributs de type enum
 ' ============================================================
 
 enum RoleUtilisateur << (E,#B8860B) >> {
